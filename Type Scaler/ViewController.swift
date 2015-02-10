@@ -17,14 +17,17 @@ class ViewController: NSViewController {
 	@IBOutlet var calculationResultsTextView: NSTextView!
 
 	let typeScaler = TypeScaler();
+	let defaultTypeSize : Double = 16;
+	let outputUnitChoices = ["sp", "em"];
 	
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		// Do any additional setup after loading the view.
-		basePixelValueTextField.stringValue = "\(typeScaler.baseValueInPixels)";
-		outputUnitsPopUp.addItemsWithTitles(typeScaler.SCALE_VALUE_CHOICES);
-		typeScalePopUp.addItemsWithTitles(Array(typeScaler.TYPE_RATIOS.keys));
+		basePixelValueTextField.stringValue = "\(defaultTypeSize)";
+		outputUnitsPopUp.addItemsWithTitles(outputUnitChoices);
+		typeScalePopUp.addItemsWithTitles(typeScaler.typeScaleNames);
+		typeScalePopUp.selectItem(typeScalePopUp.itemAtIndex(3)); //select Major Third by default
 	}
 
 	override var representedObject: AnyObject? {
@@ -34,10 +37,18 @@ class ViewController: NSViewController {
 	}
 
 	@IBAction func displayCalculations(sender: AnyObject) {
-		typeScaler.scaleValueChoice = outputUnitsPopUp.selectedItem!.title;
-		typeScaler.typeScaleName = typeScalePopUp.selectedItem!.title;
-		typeScaler.baseValueInPixels = (basePixelValueTextField.stringValue as NSString).doubleValue;
-		calculationResultsTextView.string = typeScaler.calculationString();
+		let outputUnits : String = outputUnitsPopUp.selectedItem!.title;
+		let typeScaleName : String = typeScalePopUp.selectedItem!.title;
+		let baseValueInPts : Double = (basePixelValueTextField.stringValue as NSString).doubleValue;
+		let baseValue : Double = outputUnits.lowercaseString == "em" ? typeScaler.emValue : baseValueInPts;
+		var calculationString = "Base value: \(baseValueInPts)\nType scale: \(typeScaleName)\n\n";
+		
+		for calculatedValue : Double in typeScaler.calculatedScaleArray(baseValue, typeRatioName: typeScaleName, rangeStart: -3, rangeEnd: 5){
+			calculationString = calculationString + "\(round(calculatedValue * 1000) / 1000)\(outputUnits)\n";
+		}
+	
+		
+		calculationResultsTextView.string = calculationString;
 		calculationResultsTextView.textStorage!.font = NSFont.userFontOfSize(16.0);
 	}
 

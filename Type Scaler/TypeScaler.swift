@@ -9,7 +9,7 @@
 import Foundation
 
 class TypeScaler : NSObject{
-	let TYPE_RATIOS  : [String : Double] = [
+	let typeRatios  : [String : Double] = [
 		"minor second" : 1.067,
 		"major second" : 1.125,
 		"minor third" : 1.2,
@@ -19,28 +19,15 @@ class TypeScaler : NSObject{
 		"perfect fifth" : 1.5,
 		"golden ratio" : 1.618
 	];
-	let SCALE_VALUE_CHOICES : [String] = ["sp","em"];
-	let EM_VALUE : Double = 1;
-	var baseValueInPixels : Double = 16;
-	var scaleValueChoice : String = "sp";
-	var typeScaleName : String = "major third";
+	let typeScaleNames : [String] = ["Minor Second", "Major Second", "Minor Third", "Major Third", "Perfect Fourth", "Augmented Fourth", "Perfect Fifth", "Golden Ratio"]; //because dictionary keys can't be sorted
+	let defaultRatio = "major third";
+	let emValue : Double = 1;
 
-
-	func calculateScale(input:Double, ratio:Double, power:Double)->Double{
-		return input * pow(ratio, power);
+	
+	func calculatedScaleArray(baseValue : Double, typeRatioName : String, rangeStart : Int, rangeEnd : Int)->[Double]{
+		let ratio : Double = typeRatios[typeRatioName.lowercaseString] ?? typeRatios[defaultRatio]!;
+		return Array(map(rangeStart...rangeEnd) { baseValue * pow(ratio, Double($0)) });
 	}
 	
-	func calculationString()->String{
-		let ratio : Double = TYPE_RATIOS[typeScaleName] ?? TYPE_RATIOS["major third"]!;
-		var calculationString = "Base value: \(baseValueInPixels)\nType scale: \(typeScaleName)\n\n";
-		
-		for power in stride(from: 4, to: -4, by: -1){
-			let pixelValue = calculateScale(baseValueInPixels, ratio: ratio, power: Double(power));
-			let emValue = calculateScale(EM_VALUE, ratio: ratio, power: Double(power));
-			let printValue : Double = scaleValueChoice == "sp" ? pixelValue : emValue;
-			calculationString = calculationString + "\(round(printValue * 1000) / 1000)\(scaleValueChoice)\n";
-		}
-		return calculationString;
-	}
 
 }
